@@ -1,15 +1,28 @@
 use std::net::TcpListener;
 
+use once_cell::sync::Lazy;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 
 use zero2prod::configuration::{get_configuration, DatabaseSettings};
+use zero2prod::telemetry::{get_subscriber, init_subscriber};
 
 pub struct TestApp {
     pub address: String,
     pub db_pool: PgPool,
 }
+static TRACING: Lazy<()> = Lazy::new(|| {
+    let name = "test".into();
+    let env_filter = "info".into();
+    if std::env::var("TEST_LOG").is_ok() {
+        init_subscriber(get_subscriber(name, env_filter, std::io::stdout));
+    } else {
+        init_subscriber(get_subscriber(name, env_filter, std::io::sink))
+    };
+});
+
 async fn spawn_app() -> TestApp {
+    Lazy::force(&TRACING);
     let mut settings = get_configuration().expect("Failed to load configuration");
     settings.database.database_name = Uuid::new_v4().to_string();
 
