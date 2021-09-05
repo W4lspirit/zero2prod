@@ -1,18 +1,17 @@
-FROM lukemathwalker/cargo-chef:latest-rust-1.53.0 as planner
+FROM lukemathwalker/cargo-chef:latest-rust-1.53.0 as chef
 WORKDIR /app
+
+FROM chef as planner
 COPY . .
+
 RUN cargo chef prepare --recipe-path recipe.json
 
-FROM lukemathwalker/cargo-chef:latest-rust-1.53.0 as cacher
-WORKDIR /app
+FROM chef as builder
 COPY --from=planner /app/recipe.json recipe.json
+
 RUN cargo chef cook --release --recipe-path recipe.json
 
-FROM rust:1.53.0 AS builder
-COPY --from=cacher /app/target target
-COPY --from=cacher /usr/local/cargo /usr/local/cargo
 COPY . .
-
 ENV SQLX_OFFLINE true
 
 RUN cargo build --release --bin zero2prod
