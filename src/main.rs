@@ -1,5 +1,6 @@
 use std::net::TcpListener;
 
+use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
 use zero2prod::configuration::get_configuration;
@@ -12,7 +13,9 @@ async fn main() -> std::io::Result<()> {
     init_subscriber(subscriber);
 
     let settings = get_configuration().expect("Failed to read configuration");
-    let connection = PgPool::connect(&settings.database.connection_string())
+    let connection = PgPoolOptions::new()
+        .connect_timeout(std::time::Duration::from_secs(2))
+        .connect(&settings.database.connection_string())
         .await
         .expect("Should connect");
     let listener = TcpListener::bind(format!(
