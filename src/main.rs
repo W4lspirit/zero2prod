@@ -15,7 +15,10 @@ async fn main() -> std::io::Result<()> {
     let connection = PgPool::connect(&settings.database.connection_string())
         .await
         .expect("Should connect");
-    let listener = TcpListener::bind(format!("127.0.0.1:{}", settings.application_port))?;
+    let listener = TcpListener::bind(format!(
+        "{}:{}",
+        settings.application.host, settings.application.port
+    ))?;
 
     run(listener, connection)?.await
 }
