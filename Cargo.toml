@@ -25,6 +25,7 @@ tracing-subscriber = { version = "0.2.19", features = ["registry", "env-filter"]
 tracing-bunyan-formatter = "0.2.4"
 tracing-log = "0.1.2"
 tracing-actix-web = "0.4.0-beta.10"
+serde-aux = "2.2.0"
 
 [dependencies.tracing]
 version = "0.1.26"
