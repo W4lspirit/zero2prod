@@ -1,4 +1,3 @@
--- Add migration script here
 -- Create Subscriptions Table
 CREATE TABLE subscriptions
 (
