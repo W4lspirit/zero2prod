@@ -20,10 +20,7 @@ impl EmailClient {
         html_content: &str,
         text_content: &str,
     ) -> Result<(), reqwest::Error> {
-        let url = reqwest::Url::parse(&self.base_url)
-            .expect("Expected Url")
-            .join("/email")
-            .expect("Failed to parse extension");
+        let url = format!("{}/email", self.base_url);
         let request_body = SendEmailRequest {
             from: self.sender.as_ref(),
             to: recipient.as_ref(),
@@ -31,10 +28,8 @@ impl EmailClient {
             html_body: html_content,
             text_body: text_content,
         };
-
-        let _ = self
-            .http_client
-            .post(url)
+        self.http_client
+            .post(&url)
             .header(
                 "X-Postmark-Server-Token",
                 self.authorization_token.expose_secret(),
@@ -153,7 +148,7 @@ mod tests {
         let email_client = email_client(mock_server.uri());
         let response = ResponseTemplate::new(200)
             // 3 minutes!
-            .set_delay(std::time::Duration::from_secs(180));
+            .set_delay(Duration::from_secs(180));
         Mock::given(any())
             .respond_with(response)
             .expect(1)
@@ -168,7 +163,12 @@ mod tests {
     }
 
     fn email_client(string: String) -> EmailClient {
-        EmailClient::new(string, email(), Secret::new(Faker.fake()), Duration::from_millis(200))
+        EmailClient::new(
+            string,
+            email(),
+            Secret::new(Faker.fake()),
+            Duration::from_millis(200),
+        )
     }
 
     fn email() -> SubscriberEmail {
